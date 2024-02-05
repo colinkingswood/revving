@@ -54,9 +54,10 @@ class IngestionEngine:
 
     def totals_raw_sql(self):
         """
-        This will calculate teh totals in a raw SQL query.
+        This will calculate the totals in a raw SQL query.
         It is probably easier to read that converting it to Django's ORM using F expressions,
-        Though it will have the disadvantage that it will be harder to add sorting to it afterwards
+        Though it will have the disadvantage that it will be harder to add sorting, pagination and filter
+        to it afterwards.
         """
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -64,8 +65,8 @@ class IngestionEngine:
                     currency,
                     revenue_source, 
                     customer, 
-                    strftime('%Y', date) AS year,  
-                    strftime('%m', date) AS month, 
+                    strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
+                    SUM(value) as value_total, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
                     SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
@@ -76,6 +77,10 @@ class IngestionEngine:
                          strftime('%Y', date), 
                          strftime('%m', date) 
                          
+                ORDER BY customer, 
+                         revenue_source, 
+                         strftime('%Y', date) DESC, 
+                         strftime('%m', date) DESC
             """)
             result_dict = self.dictfetchall(cursor)
         return result_dict
@@ -87,45 +92,3 @@ class IngestionEngine:
         """
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-    # except Exception as e:
-    #     form.add_error(None, f"Error parsing csv file on line {i}: {str(e)}\n{row}")
-    #     return self.form_invalid(form=form)
-
-
-
-
-
-
-    # def __init__(self):
-    #     self.invoices = []
-
-    # def add_invoice(self, invoice_data):
-    #     # This method will add invoice data to the engine
-    #     # For simplicity, this assumes invoice_data is a dictionary matching the Invoice model fields
-    #     self.invoices.append(invoice_data)
-    #
-    # def calculate_totals(self):
-    #     # Calculates totals for each revenue source
-    #     totals = {}
-    #     for invoice in self.invoices:
-    #         revenue_source = invoice['revenue_source']
-    #         if revenue_source not in totals:
-    #             totals[revenue_source] = {'value': 0, 'advance': 0, 'expected_fee': 0}
-    #         totals[revenue_source]['value'] += invoice['value']
-    #         totals[revenue_source]['advance'] += invoice['advance']
-    #         totals[revenue_source]['expected_fee'] += invoice['expected_fee']
-    #     return totals
-
-
-# invoice = Invoice.objects.create(
-#     date=row[0],
-#     invoice_number=row[1],
-#     value=row[2],
-#     haircut_percent=row[3],
-#     daily_fee_percent=row[4],
-#     currency=row[5].strip(),
-#     revenue_source=row[6].strip(),
-#     customer=row[7].strip(),
-#     payment_duration=row[8],
-#     )

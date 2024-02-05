@@ -6,7 +6,10 @@ from django.urls import reverse
 from invoices.ingestion import IngestionEngine
 from invoices.models import Invoice
 class IngestionEngineTestCase(TestCase):
+
     test_file_path = 'test_files/example.csv'
+
+
 
 
     def test_ingestion_csv_parser(self):
@@ -19,8 +22,8 @@ class IngestionEngineTestCase(TestCase):
 #            csv_file = file.read()
             results = ingestion.parse_csv(csv_file=file)
             self.assertEqual(results['success_count'], 2161)
-
-
+            print(results['errors'])
+            #self.assertEqual()
 
     def test_pasre_csv(self):
         """
@@ -32,12 +35,16 @@ class IngestionEngineTestCase(TestCase):
             upload_file = File(f)
             results = ingestion.parse_csv(upload_file)
             self.assertEqual(2161, Invoice.objects.all().count())
+
             print(results)
             print(len(results['warnings']))
 
 
 
 class UploadTestCase(TestCase):
+    """
+    This class will test the endpoints by emulating the form upload from a webpage
+    """
 
     def test_upload_csv_file(self):
         """

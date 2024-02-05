@@ -11,6 +11,8 @@
                 <tr>
                     <th>Customer</th>
                     <th>Revenue source</th>
+                    <th>Month</th>
+                    <th class="text-end">Value</th>
                     <th class="text-end">Haircut total</th>
                     <th class="text-end">Advance total</th>
                     <th class="text-end">Expected fee total</th>
@@ -19,6 +21,8 @@
                     <tr>
                         <td>{{ row.customer }}</td>
                         <td>{{ row.revenue_source }}</td>
+                        <td>{{ row.month }}</td>
+                        <td class="text-end">{{ row.value_total|floatformat:2|intcomma }} {{row.currency }}</td>
                         <td class="text-end">{{ row.haircut_total|floatformat:2|intcomma }} {{row.currency}}</td>
                         <td class="text-end">{{ row.advance_total|floatformat:2|intcomma }} {{row.currency}}</td>
                         <td class="text-end">{{ row.expected_fee_total|floatformat:2|intcomma }} {{row.currency}}</td>
