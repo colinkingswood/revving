@@ -20,7 +20,7 @@ class IngestionEngineTestCase(TestCase):
             results = ingestion.parse_csv(csv_file=file)
             self.assertEqual(results['success_count'], 2161)
 
-        # self.assertEqual(result, expected_result)  # Replace expected_result with what you actually expect
+
 
     def test_pasre_csv(self):
         """
