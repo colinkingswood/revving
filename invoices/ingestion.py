@@ -1,6 +1,7 @@
 import csv
-from django.core.files.uploadedfile import UploadedFile
-
+#from django.core.files.uploadedfile import UploadedFilefrom
+from django.core.files.base import File
+from django.db import DatabaseError, transaction
 from django.db import IntegrityError
 from django.db import connection
 
@@ -9,60 +10,75 @@ from invoices.models import Invoice
 
 class IngestionEngine:
 
-    def parse_csv(self, csv_file: UploadedFile):
+    def parse_csv(self, csv_file: File):
 
-        errors = []
-        warnings = []
+        errors = {}
         success = 0
         decoded_file = csv_file.read().decode('utf-8').splitlines()
         reader = csv.reader(decoded_file)
 
         for i, row in enumerate(reader):
-            print(i, row)
+
+            # skip the first header row
             if i == 0:
                 continue
             try:
                 # using get or create will not be a problem if lines are a duplicate, but will throw an error
                 # but will if there are other differences, based on teh invoice being unique
-                #with transaction.atomic():
-                kwargs= {
-                    "date": row[0],
-                    "invoice_number": row[1],
-                    "value": row[2],
-                    "haircut_percent": row[3],
-                    "daily_fee_percent": row[4],
-                    "currency": row[5].strip(),
-                    "revenue_source": row[6].strip(),
-                    "customer": row[7].strip(),
-                    "payment_duration": row[8],
-                    }
-                #if not Invoice.objects.filter(**kwargs).exists():
-                invoice = Invoice.objects.create(**kwargs)
-                success += 1
+                with transaction.atomic():
+                    kwargs = {
+                        "date": row[0],
+                        "invoice_number": row[1],
+                        "value": row[2],
+                        "haircut_percent": row[3],
+                        "daily_fee_percent": row[4],
+                        "currency": row[5].strip(),
+                        "revenue_source": row[6].strip(),
+                        "customer": row[7].strip(),
+                        "payment_duration": row[8],
+                        }
+                    # if not Invoice.objects.filter(**kwargs).exists():
+                    invoice = Invoice.objects.create(**kwargs)
+                    success += 1
             except IntegrityError as e:
-                warnings.append(f"Integrity error at line {i + 1}, is the line a duplicate entry?: {str(e)}")
+                error_msg = str(e)+ ". Duplicate entry?"
+
+                if not error_msg in errors:
+                    errors[error_msg] = []
+                errors[error_msg].append(i+1)
 
             except Exception as e:
-                if i == 0:
-                    warnings.append(f"Couldn't parse line first line, assuming it is a header")
-                else:
-                    errors.append(f"error importing line { i + 1 }: {str(e)}")
+                if not str(e) in errors:
+                    errors[str(e)] = []
+                errors[str(e)].append(i+1)
 
-        return {"warnings": warnings, "success_count": success, "errors": errors}
+        return {"success_count": success, "errors": errors}
 
 
     def totals_raw_sql(self):
+        """
+        This will calculate teh totals in a raw SQL query.
+        It is probably easier to read that converting it to Django's ORM using F expressions,
+        Though it will have the disadvantage that it will be harder to add sorting to it afterwards
+        """
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT 
                     currency,
                     revenue_source, 
                     customer, 
+                    strftime('%Y', date) AS year,  
+                    strftime('%m', date) AS month, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration AS expected_fee_total
+                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
+                        AS expected_fee_total
                 FROM invoices_invoice inv
-                GROUP BY customer, revenue_source
+                GROUP BY customer, 
+                         revenue_source, 
+                         strftime('%Y', date), 
+                         strftime('%m', date) 
+                         
             """)
             result_dict = self.dictfetchall(cursor)
         return result_dict

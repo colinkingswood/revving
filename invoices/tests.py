@@ -6,22 +6,39 @@ from django.urls import reverse
 from invoices.ingestion import IngestionEngine
 from invoices.models import Invoice
 class IngestionEngineTestCase(TestCase):
+    test_file_path = 'test_files/example.csv'
+
+
+    def test_ingestion_csv_parser(self):
+        """
+        Test the ingestion engine directly, by reading the file
+        """
+        ingestion = IngestionEngine()
+
+        with open(self.test_file_path, 'rb') as file:
+#            csv_file = file.read()
+            results = ingestion.parse_csv(csv_file=file)
+            self.assertEqual(results['success_count'], 2161)
+
+        # self.assertEqual(result, expected_result)  # Replace expected_result with what you actually expect
+
     def test_pasre_csv(self):
-        with open('test_files/example.csv', 'rb') as f:
+        """
+        Test posting the data to the endpoint, to emulate file upload
+        """
+        ingestion = IngestionEngine()
+
+        with open(self.test_file_path, 'rb') as f:
             upload_file = File(f)
-            ingestion = IngestionEngine()
             results = ingestion.parse_csv(upload_file)
             self.assertEqual(2161, Invoice.objects.all().count())
+            print(results)
             print(len(results['warnings']))
 
-
-    # def test_parse_json(self):
-    #     with open('test_files/example.csv', 'rb') as f:
 
 
 class UploadTestCase(TestCase):
 
-    @skip
     def test_upload_csv_file(self):
         """
         Test that the example file is uploaded and returns a 302 redirect
@@ -41,7 +58,6 @@ class UploadTestCase(TestCase):
             self.assertEqual(response.status_code, 302)
 
 
-    @skip
     def test_upload_without_csv(self):
         """
         test that we get a 400 error code when the csv file isn't supplied
