@@ -60,7 +60,7 @@ class IngestionEngine:
                     customer, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01  as expected_fee_total
+                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration AS expected_fee_total
                 FROM invoices_invoice inv
                 GROUP BY customer, revenue_source
             """)
