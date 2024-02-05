@@ -1,0 +1,30 @@
+{% load humanize %}
+
+<html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="m-5">
+            <h1 class="h1">Totals</h1>
+            <table class="table table-striped">
+                <tr>
+                    <th>Customer</th>
+                    <th>Revenue source</th>
+                    <th class="text-end">Haircut total</th>
+                    <th class="text-end">Advance total</th>
+                    <th class="text-end">Expected fee total</th>
+                </tr>
+                {% for row in totals %}
+                    <tr>
+                        <td>{{ row.customer }}</td>
+                        <td>{{ row.revenue_source }}</td>
+                        <td class="text-end">{{ row.haircut_total|floatformat:2|intcomma }} {{row.currency}}</td>
+                        <td class="text-end">{{ row.advance_total|floatformat:2|intcomma }} {{row.currency}}</td>
+                        <td class="text-end">{{ row.expected_fee_total|floatformat:2|intcomma }} {{row.currency}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        <div>
+    </body>
+</html>
