@@ -30,6 +30,15 @@ services:
       - .:/app
     depends_on:
       - db
+
+#  superuser:
+#    build: .
+#    command: python manage.py migrate
+#    volumes:
+#      - .:/app
+#    depends_on:
+#      - db
+
   redis:
     image: redis:alpine
 

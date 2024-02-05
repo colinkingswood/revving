@@ -65,22 +65,24 @@ class IngestionEngine:
                     currency,
                     revenue_source, 
                     customer, 
-                    strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
+                    EXTRACT(MONTH FROM date) || ' - ' || EXTRACT(YEAR FROM date) AS month, 
                     SUM(value) as value_total, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
+                    SUM(value - (value * haircut_percent * 0.01) * daily_fee_percent * 0.01 * payment_duration) 
                         AS expected_fee_total
                 FROM invoices_invoice inv
                 GROUP BY customer, 
                          revenue_source, 
-                         strftime('%Y', date), 
-                         strftime('%m', date) 
-                         
+                         EXTRACT(YEAR FROM date), 
+                         EXTRACT(MONTH FROM date),
+                         currency,
+                         haircut_percent,
+                         daily_fee_percent   
                 ORDER BY customer, 
                          revenue_source, 
-                         strftime('%Y', date) DESC, 
-                         strftime('%m', date) DESC
+                         EXTRACT(YEAR FROM date) DESC, 
+                         EXTRACT(MONTH FROM date) DESC
             """)
             result_dict = self.dictfetchall(cursor)
         return result_dict
@@ -92,3 +94,28 @@ class IngestionEngine:
         """
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+## query for SQLite
+"""
+                SELECT 
+                    currency,
+                    revenue_source, 
+                    customer, 
+                    strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
+                    SUM(value) as value_total, 
+                    SUM(value * haircut_percent * 0.01) as haircut_total,
+                    SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
+                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
+                        AS expected_fee_total
+                FROM invoices_invoice inv
+                GROUP BY customer, 
+                         revenue_source, 
+                         strftime('%Y', date), 
+                         strftime('%m', date) 
+
+                ORDER BY customer, 
+                         revenue_source, 
+                         strftime('%Y', date) DESC, 
+                         strftime('%m', date) DESC
+            """
