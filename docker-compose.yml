@@ -1,17 +1,19 @@
 version: '3'
 
 services:
-#  db:
-#    image: postgres
-#    environment:
-#      POSTGRES_DB: yourdbname
-#      POSTGRES_USER: yourdbuser
-#      POSTGRES_PASSWORD: yourdbpassword
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: revving
+      POSTGRES_USER: colinkingswood
+      POSTGRES_PASSWORD: testpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   web:
-    build: .
+    build:
+      context: .  # Assuming the Dockerfile is in the root directory
+      dockerfile: Dockerfile-django  # Specifically using the development
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
@@ -21,17 +23,28 @@ services:
 #      - db
       - redis
 
-  celery:
+  migrate:
     build: .
-    command: celery -A revving worker --loglevel=info
+    command: python manage.py migrate
     volumes:
-      - .:/code
+      - .:/app
     depends_on:
       - db
-      - redis
-
   redis:
     image: redis:alpine
+
+
+#  celery:
+#    build:
+#      context: .  # Assuming the Dockerfile is in the root directory
+#      dockerfile: Dockerfile-celery  # Specifically using the development
+#    command: celery -A revving worker --loglevel=info
+#    volumes:
+#      - .:/code
+#    depends_on:
+#      - db
+#      - redis
+
 
 volumes:
   postgres_data:
