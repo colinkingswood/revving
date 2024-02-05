@@ -1,7 +1,6 @@
 import csv
-#from django.core.files.uploadedfile import UploadedFilefrom
 from django.core.files.base import File
-from django.db import DatabaseError, transaction
+from django.db import transaction
 from django.db import IntegrityError
 from django.db import connection
 
@@ -18,7 +17,6 @@ class IngestionEngine:
         reader = csv.reader(decoded_file)
 
         for i, row in enumerate(reader):
-
             # skip the first header row
             if i == 0:
                 continue
@@ -37,7 +35,6 @@ class IngestionEngine:
                         "customer": row[7].strip(),
                         "payment_duration": row[8],
                         }
-                    # if not Invoice.objects.filter(**kwargs).exists():
                     invoice = Invoice.objects.create(**kwargs)
                     success += 1
             except IntegrityError as e:
