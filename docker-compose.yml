@@ -20,9 +20,22 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-#      - db
+      - db
       - redis
 
+  redis:
+    image: redis:alpine
+
+  celery:
+    build:
+      context: .  # Assuming the Dockerfile is in the root directory
+      dockerfile: Dockerfile-celery  # Specifically using the development
+    command: celery -A revving worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis
   migrate:
     build: .
     command: python manage.py migrate
@@ -31,29 +44,6 @@ services:
     depends_on:
       - db
 
-#  superuser:
-#    build: .
-#    command: python manage.py migrate
-#    volumes:
-#      - .:/app
-#    depends_on:
-#      - db
-
-  redis:
-    image: redis:alpine
-
-
-#  celery:
-#    build:
-#      context: .  # Assuming the Dockerfile is in the root directory
-#      dockerfile: Dockerfile-celery  # Specifically using the development
-#    command: celery -A revving worker --loglevel=info
-#    volumes:
-#      - .:/code
-#    depends_on:
-#      - db
-#      - redis
-
-
 volumes:
   postgres_data:
+

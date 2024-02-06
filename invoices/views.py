@@ -10,7 +10,10 @@ from invoices.ingestion import IngestionEngine
 from invoices.models import Invoice
 
 
-class CvsUploadView(FormView):
+class CsvUploadView(FormView):
+    """
+    This will give the form to upload a csv file and have it parsed.
+    """
     template_name = "upload.html"
     form_class = CsvUploadForm
 
@@ -35,6 +38,24 @@ class CvsUploadView(FormView):
 
     def get_success_url(self):
         return reverse("totals_view")
+
+
+class CsvUploadCeleryTask(CsvUploadView):
+    """
+    This is the same as the CSV Upload View, but sends teh task to celery
+    """
+    def form_valid(self, form):
+        csv_file = form.cleaned_data['csv_file']
+        # Process the CSV file
+        # ingestion = IngestionEngine()
+        # results = ingestion.parse_csv(csv_file=csv_file)
+        # if self.request.GET.get('format') == 'json' or self.request.headers.get('Accept') == 'application/json':
+        #     resp_data = {"success": True, "totals": results}
+        #     return JsonResponse(resp_data)
+        from .tasks import test_task
+        test_task.delay()
+        return super().form_valid(form)
+
 
 
 class TotalsView(TemplateView):

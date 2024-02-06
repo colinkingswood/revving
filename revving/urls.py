@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from invoices.views import CvsUploadView, TotalsView
+from invoices.views import CsvUploadView, CsvUploadCeleryTask, TotalsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('upload/', CvsUploadView.as_view(), name="upload_view"),
+    path('upload/celery/', CsvUploadCeleryTask.as_view(), name="upload_celery"),
+    path('upload/', CsvUploadView.as_view(), name="upload_view"),
     path('totals/', TotalsView.as_view(), name="totals_view"),
     path('', TotalsView.as_view(), name="catch_all" )
 ]
