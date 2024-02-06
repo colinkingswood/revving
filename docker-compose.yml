@@ -39,7 +39,9 @@ services:
       - db
       - redis
   migrate:
-    build: .
+    build:
+      context: .  # Assuming the Dockerfile is in the root directory
+      dockerfile: Dockerfile-django  # Specifically using the development
     command: python manage.py migrate
     volumes:
       - .:/app
