@@ -1,15 +1,14 @@
-import json
-
 from django.http import JsonResponse
-from django.shortcuts import render
-import csv
 from django.urls import reverse
 from django.views.generic import FormView, TemplateView
 from invoices.forms import CsvUploadForm
 from invoices.ingestion import IngestionEngine
-from invoices.models import Invoice
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from .tasks import test_task
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CsvUploadView(FormView):
     """
     This will give the form to upload a csv file and have it parsed.
@@ -26,7 +25,6 @@ class CsvUploadView(FormView):
             resp_data = {"success": True, "totals": results}
             return JsonResponse(resp_data)
         return super().form_valid(form)
-
 
     def form_invalid(self, form):
         # update the status code to indicate an error
@@ -46,16 +44,8 @@ class CsvUploadCeleryTask(CsvUploadView):
     """
     def form_valid(self, form):
         csv_file = form.cleaned_data['csv_file']
-        # Process the CSV file
-        # ingestion = IngestionEngine()
-        # results = ingestion.parse_csv(csv_file=csv_file)
-        # if self.request.GET.get('format') == 'json' or self.request.headers.get('Accept') == 'application/json':
-        #     resp_data = {"success": True, "totals": results}
-        #     return JsonResponse(resp_data)
-        from .tasks import test_task
         test_task.delay()
         return super().form_valid(form)
-
 
 
 class TotalsView(TemplateView):
@@ -76,4 +66,3 @@ class TotalsView(TemplateView):
 
         # otherwise return a standard webpage
         return super().render_to_response(context, **response_kwargs)
-

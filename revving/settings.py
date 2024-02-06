@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': 'revving',
         'USER': 'colinkingswood',
         'PASSWORD': 'testpassword',
-        'HOST': 'db',  # Matches the service name in docker-compose.yml
+        'HOST': '127.0.0.1',  # Matches the service name in docker-compose.yml
         'PORT': '5432',
     }}
 

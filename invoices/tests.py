@@ -6,11 +6,15 @@ from django.urls import reverse
 from invoices.ingestion import IngestionEngine
 from invoices.models import Invoice
 class IngestionEngineTestCase(TestCase):
+    """
+    These tests will test the ingestion engine  directly
+    """
+
 
     test_file_path = 'test_files/example.csv'
 
-
-
+    def test_totals(self):
+        pass
 
     def test_ingestion_csv_parser(self):
         """
