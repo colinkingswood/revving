@@ -21,30 +21,35 @@ class CsvUploadView(FormView):
         # Process the CSV file
         ingestion = IngestionEngine()
         results = ingestion.parse_csv(csv_file=csv_file)
-        if self.request.GET.get('format') == 'json' or self.request.headers.get('Accept') == 'application/json':
+        if (self.request.GET.get('format') == 'json'
+                or self.request.headers.get('Accept') == 'application/json'):
             resp_data = {"success": True, "totals": results}
             return JsonResponse(resp_data)
         return super().form_valid(form)
 
     def form_invalid(self, form):
         # update the status code to indicate an error
-        if self.request.GET.get('format') == 'json' or self.request.headers.get('Accept') == 'application/json':
+        if (self.request.GET.get('format') == 'json'
+                or self.request.headers.get('Accept') == 'application/json'):
             resp_data = {"success": False, "errors": form.errors}
             return JsonResponse(resp_data)
-        resp = self.render_to_response(self.get_context_data(form=form), status=400)
+        resp = self.render_to_response(self.get_context_data(form=form),
+                                       status=400)
         return resp
 
     def get_success_url(self):
         return reverse("totals_view")
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CsvUploadCeleryTask(CsvUploadView):
     """
     This is the same as the CSV Upload View, but sends teh task to celery
     """
     def form_valid(self, form):
+        # TODO, add this as a background task
         csv_file = form.cleaned_data['csv_file']
-        test_task.delay()
+
+        test_task.delay(csv_file)
         return super().form_valid(form)
 
 
@@ -59,7 +64,8 @@ class TotalsView(TemplateView):
 
     def render_to_response(self, context, **response_kwargs):
         # check if the request is looking for as JSON return type
-        if self.request.GET.get('format') == 'json' or self.request.headers.get('Accept') == 'application/json':
+        if (self.request.GET.get('format') == 'json' or
+                self.request.headers.get('Accept') == 'application/json'):
             totals = context['totals']
             resp_data = {"success": True, "totals": totals}
             return JsonResponse(resp_data)

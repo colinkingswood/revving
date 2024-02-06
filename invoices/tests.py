@@ -41,13 +41,13 @@ class IngestionEngineTestCase(TestCase):
             self.assertEqual(2161, Invoice.objects.all().count())
 
             print(results)
-            print(len(results['warnings']))
-
+            print(results['errors'])
 
 
 class UploadTestCase(TestCase):
     """
-    This class will test the endpoints by emulating the form upload from a webpage
+    This class will test the endpoints by emulating the form upload
+    from a webpage
     """
 
     def test_upload_csv_file(self):
@@ -62,12 +62,11 @@ class UploadTestCase(TestCase):
 
             # Simulate a POST request to the 'uploads/' endpoint with the file
             response = self.client.post(url,
-                                       {'csv_file': upload_file},
-                                       format='multipart')
+                                        {'csv_file': upload_file},
+                                        format='multipart')
 
             # Check that the response is 200 OK
             self.assertEqual(response.status_code, 302)
-
 
     def test_upload_without_csv(self):
         """
@@ -79,6 +78,5 @@ class UploadTestCase(TestCase):
                                     {},
                                     format='multipart')
 
-
-        # Check that the response is 200 OK
+        # Check that the response is 400
         self.assertEqual(response.status_code, 400)
