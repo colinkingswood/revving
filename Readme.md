@@ -35,8 +35,9 @@ If there is an error that the tables are not created run
 
 The endpoints are:
 
-[127.0.0.1:8000/upload/](127.0.0.1:8000/upload/)
-[127.0.0.1:8000/totals/](127.0.0.1:8000/totals/)
+- [127.0.0.1:8000/upload/](127.0.0.1:8000/upload/)
+
+- [127.0.0.1:8000/totals/](127.0.0.1:8000/totals/)
 
 The endpoints will work as webpages or json requests. You can Add the accept header, or add '?format=json' 
 to the querystring to get a json response.
@@ -50,7 +51,9 @@ You can post a file to the upload endpoint
 and get totals with 
 
 `curl 127.0.0.1:8000/totals/ -H "Accept: application/json"`
+
 or 
+
 `curl 127.0.0.1:8000/totals/?format=json` 
 
 
