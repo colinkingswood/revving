@@ -10,7 +10,9 @@ Make sure nothing is blocking port 8000 (or change the docker-compose.yml)
 
  followed by
 
-```cd revving``` 
+```
+cd revving
+``` 
 
 To run the tests 
 
@@ -23,7 +25,9 @@ Then `ctrl` + `c` to stop the docker containers.
 
 To run the application server:
 
- ```docker compose up --build``` 
+ ```
+ docker compose up --build
+ ``` 
  
 
 You should then be able to access the application in a web browser on [127.0.0.1:8000/upload/](127.0.0.1:8000/upload/)
