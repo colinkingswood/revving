@@ -1,5 +1,5 @@
 from unittest import skip
-
+import csv
 from django.core.files import File
 from django.test import TestCase
 from django.urls import reverse
@@ -14,6 +14,64 @@ class IngestionEngineTestCase(TestCase):
     test_file_path = 'test_files/example.csv'
 
     def test_totals(self):
+        filename = 'totals_test.csv'
+
+        # Data to write
+        rows = [
+                ["date","invoice number","value","haircut percent","Daily fee percent","currency","Revenue source","customer","Expected payment duration"],
+
+                ["2023-09-18","7090","200.00","10","0.125","USD","SourceA","Customer1","65"],
+                ["2023-09-28","3140","200.00","10","0.125","USD","SourceA","Customer1","65"],
+
+                ["2023-05-15","3613","100.00","10","0.125","USD","SourceB","Customer1","65"],
+
+                ["2023-05-01","6840","100.00","10","0.7","USD","SourceC","Customer2","60"],
+                ["2023-05-01", "6841", "100.00", "10", "0.7", "USD", "SourceC", "Customer2", "60"],
+                ["2023-05-01", "6841", "100.00", "10", "0.7", "USD", "SourceC", "Customer2", "60"],
+                ["2023-05-01", "6841", "100.00", "10", "0.7", "USD", "SourceC", "Customer2", "60"]
+               ]
+
+        # Open the file and write the test data to it
+        with open(filename, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+
+        with open(filename, 'rb') as file:
+            ingestion = IngestionEngine()
+            results = ingestion.parse_csv(file)
+            self.assertEqual(results.get("success_count"), 5)
+            errors = results.get('errors')
+            self.assertListEqual(errors.get("Duplicate entry?"),[7,8] )
+
+            totals = ingestion.totals_raw_sql()
+            print(totals)
+            # we should have 2 lines with customer1
+            line_1 = totals[0]  # Customer1, SourceA, 09-2023
+            line_2 = totals[1]  # Customer1, SourceB, 05-2023
+            line_3 = totals[2]  # Customer2, SourceC, 05-2023
+
+            self.assertEqual(line_1['customer'], "Customer1")
+            self.assertEqual(line_1['month'], "9 - 2023")
+            self.assertEqual(line_1['revenue_source'], "SourceA")
+            # values_l_1 = 200 + 200 = 400
+            self.assertEqual(line_1['value_total'], 400)
+            # haircut = 10, haircut total = 400 * 10 * 0.01 = 40
+            self.assertEqual(line_1['haircut_total'], 40)
+            # advance total = 400 - 40 = 360
+            self.assertEqual(line_1['advance_total'], 360)
+            # advance total * daily_fee percent * 0.01 * payment_duration
+            # expected fee total = 360 * 0.125  * 0.01 * 65 = 29.25
+            self.assertEqual(line_1['expected_fee_total'], 29.25)
+
+
+            self.assertEqual(line_2['customer'], "Customer1")
+            self.assertEqual(line_2['month'], "5 - 2023")
+            self.assertEqual(line_2['revenue_source'], "SourceB")
+
+            self.assertEqual(line_3['customer'], "Customer2")
+            self.assertEqual(line_3['month'], "5 - 2023")
+            self.assertEqual(line_3['revenue_source'], "SourceC")
+
 
 
     def test_ingestion_csv_parser(self):
@@ -27,7 +85,7 @@ class IngestionEngineTestCase(TestCase):
             results = ingestion.parse_csv(csv_file=file)
             self.assertEqual(results['success_count'], 2161)
             print(results['errors'])
-            #self.assertEqual()
+            # self.assertEqual()
 
     def test_pasre_csv(self):
         """

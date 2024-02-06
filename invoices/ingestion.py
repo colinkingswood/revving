@@ -38,7 +38,7 @@ class IngestionEngine:
                     invoice = Invoice.objects.create(**kwargs)
                     success += 1
             except IntegrityError as e:
-                error_msg = str(e)+ ". Duplicate entry?"
+                error_msg = "Duplicate entry?"
 
                 if not error_msg in errors:
                     errors[error_msg] = []
@@ -56,6 +56,7 @@ class IngestionEngine:
         """
         This will calculate the totals in a raw SQL query.
         It is probably easier to read that converting it to Django's ORM using F expressions,
+        and should be faster than processing in python.
         Though it will have the disadvantage that it will be harder to add sorting, pagination and filter
         to it afterwards.
         """
@@ -65,12 +66,15 @@ class IngestionEngine:
                     currency,
                     revenue_source, 
                     customer, 
+                    payment_duration,
+                    daily_fee_percent,
                     EXTRACT(MONTH FROM date) || ' - ' || EXTRACT(YEAR FROM date) AS month, 
                     SUM(value) as value_total, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-                    SUM(value - (value * haircut_percent * 0.01) * daily_fee_percent * 0.01 * payment_duration) 
-                        AS expected_fee_total
+                    (
+                    SUM((value - (value * haircut_percent * 0.01)))
+                     * daily_fee_percent * 0.01 * payment_duration)  AS expected_fee_total
                 FROM invoices_invoice inv
                 GROUP BY customer, 
                          revenue_source, 
@@ -78,7 +82,8 @@ class IngestionEngine:
                          EXTRACT(MONTH FROM date),
                          currency,
                          haircut_percent,
-                         daily_fee_percent   
+                         daily_fee_percent,
+                         payment_duration  
                 ORDER BY customer, 
                          revenue_source, 
                          EXTRACT(YEAR FROM date) DESC, 
@@ -96,26 +101,26 @@ class IngestionEngine:
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-## query for SQLite
+# query for SQLite, but I am using postgres now
 """
-                SELECT 
-                    currency,
-                    revenue_source, 
-                    customer, 
-                    strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
-                    SUM(value) as value_total, 
-                    SUM(value * haircut_percent * 0.01) as haircut_total,
-                    SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-                    SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
-                        AS expected_fee_total
-                FROM invoices_invoice inv
-                GROUP BY customer, 
-                         revenue_source, 
-                         strftime('%Y', date), 
-                         strftime('%m', date) 
+        SELECT 
+            currency,
+            revenue_source, 
+            customer, 
+            strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
+            SUM(value) as value_total, 
+            SUM(value * haircut_percent * 0.01) as haircut_total,
+            SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
+            SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
+                AS expected_fee_total
+        FROM invoices_invoice inv
+        GROUP BY customer, 
+                 revenue_source, 
+                 strftime('%Y', date), 
+                 strftime('%m', date) 
 
-                ORDER BY customer, 
-                         revenue_source, 
-                         strftime('%Y', date) DESC, 
-                         strftime('%m', date) DESC
-            """
+        ORDER BY customer, 
+                 revenue_source, 
+                 strftime('%Y', date) DESC, 
+                 strftime('%m', date) DESC
+"""

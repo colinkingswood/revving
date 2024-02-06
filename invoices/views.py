@@ -40,6 +40,7 @@ class CsvUploadView(FormView):
     def get_success_url(self):
         return reverse("totals_view")
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CsvUploadCeleryTask(CsvUploadView):
     """

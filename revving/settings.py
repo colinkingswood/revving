@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': 'revving',
         'USER': 'colinkingswood',
         'PASSWORD': 'testpassword',
-        'HOST': 'db',  # Matches the service name in docker-compose.yml
+        'HOST': '127.0.0.1',  # Matches the service name in docker-compose.yml
         'PORT': '5432',
     }}
 
@@ -135,6 +135,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'  # Use the Redis server running on localhost, port 6379, using database 0
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'  # To store task results in Redis
-
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
