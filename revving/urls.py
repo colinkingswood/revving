@@ -23,5 +23,5 @@ urlpatterns = [
     path('upload/celery/', CsvUploadCeleryTask.as_view(), name="upload_celery"),
     path('upload/', CsvUploadView.as_view(), name="upload_view"),
     path('totals/', TotalsView.as_view(), name="totals_view"),
-    path('', TotalsView.as_view(), name="catch_all" )
+    path('', TotalsView.as_view(), name="catch_all")
 ]

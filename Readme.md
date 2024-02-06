@@ -43,11 +43,15 @@ to the querystring to get a json response.
 
 You can post a file to the upload endpoint
 
+`curl -F "csv_file=@<path_to_csv_file>" http://127.0.0.1:8000/upload/` -H "Accept: application/json"`
+
 `curl -F "csv_file=@<path_to_csv_file>" http://127.0.0.1:8000/upload/?format=json`
 
 and get totals with 
 
 `curl 127.0.0.1:8000/totals/ -H "Accept: application/json"`
+or 
+`curl 127.0.0.1:8000/totals/?format=json` 
 
 
 
@@ -56,6 +60,8 @@ Still todo
 - convert the query to use Django F expressions, then can add filtering and sorting more easily
 - run the task as a celery task
 - Add CSFR tokens
+- improve error messages
+- input data directly as json (probably add in DRF and serialzers)
 - add more tests
 
  
