@@ -50,9 +50,12 @@ You can post a file to the upload endpoint
 
 `curl -F "csv_file=@<path_to_csv_file>" http://127.0.0.1:8000/upload/ -H "Accept: application/json"`
 
+or
+
 `curl -F "csv_file=@<path_to_csv_file>" http://127.0.0.1:8000/upload/?format=json`
 
-and get totals with 
+
+and get totals with
 
 `curl 127.0.0.1:8000/totals/ -H "Accept: application/json"`
 
