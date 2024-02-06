@@ -21,8 +21,6 @@ class IngestionEngine:
             if i == 0:
                 continue
             try:
-                # using get or create will not be a problem if lines are a duplicate, but will throw an error
-                # but will if there are other differences, based on teh invoice being unique
                 with transaction.atomic():
                     kwargs = {
                         "date": row[0],
@@ -66,7 +64,7 @@ class IngestionEngine:
                     currency,
                     revenue_source, 
                     customer, 
-                    EXTRACT(MONTH FROM date) || ' - ' || EXTRACT(YEAR FROM date) AS month, 
+                    EXTRACT(MONTH FROM date) || ' / ' || EXTRACT(YEAR FROM date) AS month, 
                     SUM(value) as value_total, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,
                     SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
@@ -99,26 +97,26 @@ class IngestionEngine:
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-# query for SQLite, but I am using postgres now
-"""
-        SELECT 
-            currency,
-            revenue_source, 
-            customer, 
-            strftime('%m', date) || ' - ' || strftime('%Y', date) AS month, 
-            SUM(value) as value_total, 
-            SUM(value * haircut_percent * 0.01) as haircut_total,
-            SUM(value - (value * haircut_percent * 0.01))  as advance_total, 
-            SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration 
-                AS expected_fee_total
-        FROM invoices_invoice inv
-        GROUP BY customer, 
-                 revenue_source, 
-                 strftime('%Y', date), 
-                 strftime('%m', date) 
-
-        ORDER BY customer, 
-                 revenue_source, 
-                 strftime('%Y', date) DESC, 
-                 strftime('%m', date) DESC
-"""
+# # query for SQLite, but I am using postgres now
+# """
+#         SELECT
+#             currency,
+#             revenue_source,
+#             customer,
+#             strftime('%m', date) || ' - ' || strftime('%Y', date) AS month,
+#             SUM(value) as value_total,
+#             SUM(value * haircut_percent * 0.01) as haircut_total,
+#             SUM(value - (value * haircut_percent * 0.01))  as advance_total,
+#             SUM((value - (value * haircut_percent * 0.01))) * daily_fee_percent * 0.01 * payment_duration
+#                 AS expected_fee_total
+#         FROM invoices_invoice inv
+#         GROUP BY customer,
+#                  revenue_source,
+#                  strftime('%Y', date),
+#                  strftime('%m', date)
+#
+#         ORDER BY customer,
+#                  revenue_source,
+#                  strftime('%Y', date) DESC,
+#                  strftime('%m', date) DESC
+# """

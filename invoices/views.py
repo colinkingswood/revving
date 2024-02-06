@@ -49,7 +49,6 @@ class CsvUploadCeleryTask(CsvUploadView):
     def form_valid(self, form):
         # TODO, add this as a background task
         csv_file = form.cleaned_data['csv_file']
-
         test_task.delay(csv_file)
         return super().form_valid(form)
 
