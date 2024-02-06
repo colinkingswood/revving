@@ -66,8 +66,6 @@ class IngestionEngine:
                     currency,
                     revenue_source, 
                     customer, 
-                    payment_duration,
-                    daily_fee_percent,
                     EXTRACT(MONTH FROM date) || ' - ' || EXTRACT(YEAR FROM date) AS month, 
                     SUM(value) as value_total, 
                     SUM(value * haircut_percent * 0.01) as haircut_total,

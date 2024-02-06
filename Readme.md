@@ -58,7 +58,7 @@ or
 ## Still todo 
 - round the totals to two decimal places in JSON
 - convert the query to use Django F expressions, then can add filtering and sorting more easily
-- run the ingestion as a celery task
+- run the ingestion as a celery task (celery is set up, but I didn't get a chance to add it yet)
 - Add CSFR tokens
 - improve error messages
 - input data directly as json (probably add in DRF and serialzers)
