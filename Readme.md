@@ -66,12 +66,13 @@ or
 - round the totals to two decimal places in JSON
 - convert the query to use Django F expressions, then can add filtering and sorting more easily
 - run the ingestion as a celery task (celery is set up, but I didn't get a chance to add it yet)
+- input data directly as json (probably add in DRF and serialzers)
 - Add CSFR tokens
 - improve error messages
-- input data directly as json (probably add in DRF and serialzers)
+- more data validation
+- handle more errors, a non csv uplaod for example
 - add more tests
 - add ENUM for currencies
-- more data validation
 
 ## also, I made a number of assumptions, 
 - that the currency stays the same betweem customer and revenue source
