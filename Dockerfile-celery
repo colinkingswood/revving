@@ -23,6 +23,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . /app/
 
 # Command to run Django
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]
-
-# Note: To run Celery, use a separate command which we'll handle
+CMD ["celery", "worker", "-A", "revving" "worker" "--loglevel=info"]

@@ -6,7 +6,7 @@ from invoices.ingestion import IngestionEngine
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .tasks import test_task
-
+import tempfile
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CsvUploadView(FormView):
@@ -49,7 +49,10 @@ class CsvUploadCeleryTask(CsvUploadView):
     def form_valid(self, form):
         # TODO, add this as a background task
         csv_file = form.cleaned_data['csv_file']
-        test_task.delay(csv_file)
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            for chunk in csv_file.chunks():
+                temp_file.write(chunk)
+        test_task.delay(temp_file.name)
         return super().form_valid(form)
 
 
